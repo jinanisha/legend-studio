@@ -1213,12 +1213,20 @@ export const observe_RelationalDatabaseConnection = skipObservedWithContext(
     makeObservable(metamodel, {
       datasourceSpecification: observable,
       authenticationStrategy: observable,
+      localMode: observable,
       postProcessors: observable,
       hashCode: computed,
     });
 
-    observe_DatasourceSpecification(metamodel.datasourceSpecification, context);
-    observe_AuthenticationStrategy(metamodel.authenticationStrategy, context);
+    if (metamodel.datasourceSpecification) {
+      observe_DatasourceSpecification(
+        metamodel.datasourceSpecification,
+        context,
+      );
+    }
+    if (metamodel.authenticationStrategy) {
+      observe_AuthenticationStrategy(metamodel.authenticationStrategy, context);
+    }
     metamodel.postProcessors.forEach((postProcessor) => {
       observe_PostProcessor(postProcessor, context);
     });

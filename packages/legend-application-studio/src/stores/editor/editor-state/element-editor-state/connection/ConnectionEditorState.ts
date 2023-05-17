@@ -62,6 +62,7 @@ import type { DSL_Mapping_LegendStudioApplicationPlugin_Extension } from '../../
 import {
   relationDbConnection_setNewAuthenticationStrategy,
   relationDbConnection_setDatasourceSpecification,
+  relationDbConnection_setLocalMode,
 } from '../../../../graph-modifier/STO_Relational_GraphModifierHelper.js';
 import {
   MapperPostProcessorEditorState,
@@ -117,6 +118,7 @@ export enum CORE_AUTHENTICATION_STRATEGY_TYPE {
 
 export class RelationalDatabaseConnectionValueState extends ConnectionValueState {
   override connection: RelationalDatabaseConnection;
+  localMode = false;
   selectedTab = RELATIONAL_DATABASE_TAB_TYPE.GENERAL;
   postProcessorState: PostProcessorEditorState | undefined;
 
@@ -126,10 +128,12 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
   ) {
     super(editorStore, connection);
     makeObservable(this, {
+      localMode: observable,
       selectedTab: observable,
       postProcessorState: observable,
       selectedDatasourceSpecificationType: computed,
       selectedAuthenticationStrategyType: computed,
+      setLocalMode: action,
       setSelectedTab: action,
       selectPostProcessor: action,
     });
@@ -176,6 +180,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
     this.selectedTab = val;
   }
 
+  setLocalMode(val: boolean): void {
+    this.localMode = val;
+  }
+
   label(): string {
     return `${this.connection.type} connection`;
   }
@@ -200,6 +208,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_DATASOURCE_SPEC_TYPE.SPANNER;
     } else if (spec instanceof TrinoDatasourceSpecification) {
       return CORE_DATASOURCE_SPEC_TYPE.TRINO;
+    } else if (spec == undefined) {
+      return undefined;
     }
     const extraDatasourceSpecificationClassifiers =
       this.editorStore.pluginManager
@@ -300,6 +310,10 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       dataSpec,
       observerContext,
     );
+    relationDbConnection_setLocalMode(
+      this.connection,
+      this.connection.localMode,
+    );
   }
 
   get selectedAuthenticationStrategyType(): string | undefined {
@@ -330,6 +344,8 @@ export class RelationalDatabaseConnectionValueState extends ConnectionValueState
       return CORE_AUTHENTICATION_STRATEGY_TYPE.MIDDLE_TIER_USERNAME_PASSWORD;
     } else if (auth instanceof TrinoDelegatedKerberosAuthenticationStrategy) {
       return CORE_AUTHENTICATION_STRATEGY_TYPE.TRINO_DELEGATED_KERBEROS;
+    } else if (auth == undefined) {
+      return undefined;
     }
 
     const extraAuthenticationStrategyClassifiers =

@@ -73,15 +73,16 @@ export abstract class DatabaseConnection extends Connection {
 }
 
 export class RelationalDatabaseConnection extends DatabaseConnection {
-  datasourceSpecification: DatasourceSpecification;
-  authenticationStrategy: AuthenticationStrategy;
+  datasourceSpecification: DatasourceSpecification | undefined;
+  authenticationStrategy: AuthenticationStrategy | undefined;
   postProcessors: PostProcessor[] = [];
+  localMode?: boolean | undefined;
 
   constructor(
     store: PackageableElementReference<Database>,
     type: string,
-    datasourceSpecification: DatasourceSpecification,
-    authenticationStrategy: AuthenticationStrategy,
+    datasourceSpecification: DatasourceSpecification | undefined,
+    authenticationStrategy: AuthenticationStrategy | undefined,
   ) {
     super(store, type);
     this.datasourceSpecification = datasourceSpecification;
@@ -94,8 +95,8 @@ export class RelationalDatabaseConnection extends DatabaseConnection {
       this.store.valueForSerialization ?? '',
       this.timeZone ?? '',
       this.quoteIdentifiers?.toString() ?? '',
-      this.datasourceSpecification,
-      this.authenticationStrategy,
+      this.datasourceSpecification ?? '',
+      this.authenticationStrategy ?? '',
       hashArray(this.postProcessors),
     ]);
   }
